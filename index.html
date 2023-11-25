@@ -1,0 +1,156 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Laberinto</title>
+    <style>
+         body {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            flex-direction: column;
+            background-color: #ffff;
+        }
+
+        #comandos{
+            background-color: #f00;
+            color: black;
+        }
+        #maze {
+            margin-top: 30px;
+            display: grid;
+            grid-template-columns: repeat(17, 20px);
+            grid-gap: 1px;
+            background-color: #fff;
+        }
+
+        .cell {
+            width: 20px;
+            height: 20px;
+            background-color: lightblue;
+            border: 1px solid #000;
+        }
+
+        #player {
+            background-color: #f00;
+            width: 20px;
+            height: 20px;
+        }
+
+       
+        .wall {
+            background-color: #333;
+        }
+        a{
+            margin-top: 40px;
+            background-color: black;
+            color: #ffff;
+            border: 10px solid black;
+            border-radius: 10px;
+        }
+    </style>
+</head>
+<body>
+    <h1>Laberinto controlado por comandos!</h1>
+    <h2>Para comenzar presiona la tecla f12 y da click en el apartado de consola. <br> Posicionate dentro de el y con base a los siguientes comandos podras resolver el Laberinto! <br> <h2 id="comandos">Utiliza los siguientes comandos= mover('derecha'), mover('izquierda'), mover('arriba'), mover('abajo')</h2></h2>
+
+    <div id="maze"></div>
+
+    <script>
+        const audioArriba = new Audio('arriba.m4a');
+        const audioAbajo = new Audio('abajo.m4a');
+        const audioIzquierda = new Audio('izquierda.m4a');
+        const audioDerecha = new Audio('derecha.m4a');
+        const audio = new Audio ('intr.m4a');
+     
+       
+        const mazeData = [
+            '#','#','#','#','#','#','#','#','#','#','#','#','#','#','#','#','#',
+            '#',' ',' ',' ',' ',' ','#',' ',' ',' ',' ',' ','#',' ',' ',' ',' ',
+            '#',' ','#','#','#','#','#',' ','#',' ','#','#','#',' ','#','#','#',
+            '#',' ',' ',' ',' ',' ',' ',' ','#',' ','#',' ',' ',' ','#',' ','#',
+            '#',' ','#','#','#','#','#','#','#',' ','#',' ','#','#','#',' ','#',
+            '#',' ',' ',' ','#',' ',' ',' ',' ',' ','#',' ','#',' ',' ',' ','#',
+            '#','#','#',' ','#',' ','#','#','#','#','#',' ','#','#','#',' ','#',
+            ' ',' ','#',' ','#',' ',' ',' ',' ',' ','#',' ',' ',' ','#',' ','#',
+            '#',' ','#',' ','#','#','#','#','#',' ','#','#','#',' ','#',' ','#',
+            '#',' ','#',' ',' ',' ','#',' ',' ',' ','#',' ','#',' ',' ',' ','#',
+            '#',' ','#',' ','#','#','#',' ','#',' ','#',' ','#','#','#',' ','#',
+            '#',' ',' ',' ','#',' ',' ',' ','#',' ',' ',' ',' ',' ','#',' ','#',
+            '#','#','#','#','#',' ','#','#','#',' ','#','#','#','#','#',' ','#',
+            '#',' ',' ',' ',' ',' ','#',' ',' ',' ','#',' ',' ',' ',' ',' ','#',
+            '#',' ','#','#','#','#','#','#','#','#','#',' ','#','#','#','#','#',
+            '#',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ','#',
+            '#','#','#','#','#','#','#','#','#','#','#','#','#','#','#','#','#'
+        ];
+
+        const mazeElement = document.getElementById('maze');
+
+        mazeData.forEach(cell => {
+            const cellElement = document.createElement('div');
+            cellElement.className = cell === '#' ? 'cell wall' : 'cell';
+            mazeElement.appendChild(cellElement);
+        });
+
+        let playerPosition = 7 * 17 + 0;
+        mazeElement.children[playerPosition].classList.add('player');
+        const playerElement = document.createElement('div');
+        playerElement.className = 'cell';
+        playerElement.id = 'player';
+        mazeElement.children[playerPosition].appendChild(playerElement);
+
+        let exitPosition = 1 * 17 + 16;
+        mazeElement.children[exitPosition].classList.add('exit');
+        console.log("Recuerda, los comandos de movilidad son=  mover('arriba, abajo, derecha, izquierda')" )
+        function mover(direccion) {
+            const x = Math.floor(playerPosition / 17);
+            const y = playerPosition % 17;
+
+            let nuevaPosicionJugador;
+           
+            if (direccion === 'arriba' && x > 0 && mazeData[x - 1][y] !== '#') {
+      
+                nuevaPosicionJugador = playerPosition - 17;
+                audioArriba.play();
+            } else if (direccion === 'abajo' && x < 16 && mazeData[x + 1][y] !== '#') {
+        
+                nuevaPosicionJugador = playerPosition + 17;
+                audioAbajo.play();
+    
+            } else if (direccion === 'izquierda' && y > 0 && mazeData[x][y - 1] !== '#') {
+               
+                nuevaPosicionJugador = playerPosition - 1;
+                audioIzquierda.play();
+            } else if (direccion === 'derecha' && y < 16 && mazeData[x][y + 1] !== '#') {
+                
+                nuevaPosicionJugador = playerPosition + 1;
+                audioDerecha.play();
+            } else {
+                nuevaPosicionJugador = playerPosition;
+            }
+
+            if (nuevaPosicionJugador === exitPosition) {
+                alert('¡Felicidades! ¡Llegaste al final!');
+                resetPlayer();
+            } else if (!mazeElement.children[nuevaPosicionJugador].classList.contains('wall')) {
+                mazeElement.children[playerPosition].removeChild(playerElement);
+                playerPosition = nuevaPosicionJugador;
+                mazeElement.children[playerPosition].appendChild(playerElement);
+            }
+        }
+
+        function resetPlayer() {
+            mazeElement.children[playerPosition].removeChild(playerElement);
+            playerPosition = 7 * 17 + 0;
+            mazeElement.children[playerPosition].appendChild(playerElement);
+        }
+
+        // Permitir el control desde la consola del navegador
+        window.mover = mover;
+        window.resetPlayer = resetPlayer;
+    </script>
+    <a href="https://docs.google.com/document/d/10o74gZ_vPIAU7of-yTFGkBWkPg0UZV-bgO6g20daHOk/edit?usp=sharing">Documentación</a>
+
+</body>
+</html>
